@@ -54,13 +54,20 @@
             border-bottom: 2px solid var(--accent-blue);
             color: var(--accent-blue);
         }
+        /* Modal Transitions */
+        .modal-enter { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-enter-active { opacity: 1; pointer-events: auto; }
+        .slide-panel { transform: translateX(100%); transition: transform 0.3s ease; }
+        .slide-panel-active { transform: translateX(0); }
     </style>
 </head>
 <body class="antialiased">
 
-    <nav class="fixed w-full z-50 nav-blur py-4">
+    <nav class="fixed w-full z-40 nav-blur py-4">
         <div class="container mx-auto px-6 flex justify-between items-center">
-            <div class="text-2xl font-bold tracking-tighter kriss-gradient">VECTOR BLUE STUDIOS</div>
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="text-2xl font-bold tracking-tighter kriss-gradient hidden sm:block">VECTOR BLUE STUDIOS</div>
+            </a>
             <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-widest text-gray-400">
                 <button onclick="filterApps('all')" class="category-btn active hover:text-white transition uppercase">All</button>
                 <button onclick="filterApps('kids')" class="category-btn hover:text-white transition uppercase">Kids</button>
@@ -68,11 +75,11 @@
                 <button onclick="filterApps('adults')" class="category-btn hover:text-white transition uppercase">Adults</button>
             </div>
             <div class="flex items-center space-x-4">
-                <button class="relative group">
+                <button onclick="toggleCart()" class="relative group cursor-pointer">
                     <svg class="w-6 h-6 text-white group-hover:text-[#00f0ff] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                     </svg>
-                    <span id="cart-count" class="absolute -top-2 -right-2 bg-[#00f0ff] text-black text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-[#00f0ff] text-black text-[10px] font-bold px-2 py-0.5 rounded-full transition-transform">0</span>
                 </button>
             </div>
         </div>
@@ -99,37 +106,78 @@
         <p>&copy; 2026 Vector Blue Studios. All systems operational.</p>
     </footer>
 
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-50 modal-enter backdrop-blur-sm" onclick="toggleCart(event)">
+        <div id="cart-panel" class="absolute right-0 top-0 bottom-0 w-full md:w-[400px] bg-[#0a0a0a] border-l border-gray-800 slide-panel flex flex-col shadow-2xl" onclick="event.stopPropagation()">
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center">
+                <h2 class="text-2xl font-bold kriss-gradient">Your Cart</h2>
+                <button onclick="toggleCart()" class="text-gray-400 hover:text-white transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="cart-items" class="flex-grow overflow-y-auto p-6 space-y-4">
+                </div>
+            
+            <div class="p-6 border-t border-gray-800 bg-[#0d0d0d]">
+                <div class="flex justify-between mb-4">
+                    <span class="text-gray-400">Total</span>
+                    <span id="cart-total" class="font-bold text-xl text-[#00f0ff]">$0.00</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="clearCart()" class="px-4 py-3 rounded-xl border border-gray-700 text-gray-400 hover:bg-red-900/20 hover:text-red-400 hover:border-red-900 transition flex-1">Clear</button>
+                    <button onclick="processCheckout()" class="btn-glow flex-[2] py-3 rounded-xl font-bold text-white shadow-lg">Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="receipt-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center modal-enter backdrop-blur-md px-4">
+        <div class="bg-[#0a0a0a] border border-[#00f0ff]/30 rounded-2xl p-8 max-w-md w-full shadow-[0_0_50px_rgba(0,240,255,0.1)] text-center">
+            <div class="w-16 h-16 bg-[#00f0ff]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#00f0ff]/50">
+                <svg class="w-8 h-8 text-[#00f0ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 class="text-3xl font-bold mb-2">Thank You!</h2>
+            <p class="text-gray-400 mb-6 text-sm">Your purchase was successful. Systems updated.</p>
+            
+            <div class="bg-[#050505] rounded-xl p-4 text-left border border-gray-800 mb-6 max-h-48 overflow-y-auto" id="receipt-items">
+                </div>
+            
+            <div class="flex justify-between items-center border-t border-gray-800 pt-4 mb-6">
+                <span class="text-gray-400">Total Paid:</span>
+                <span id="receipt-total" class="font-bold text-2xl text-[#00f0ff]">$0.00</span>
+            </div>
+            
+            <button onclick="closeReceipt()" class="w-full btn-glow py-3 rounded-xl font-bold text-white">Return to Store</button>
+        </div>
+    </div>
+
     <script>
-        // Store Data mapping
+        // Store Data mapping (Added numeric prices for calculation)
         const apps = [
-            { id: 1, name: "MOODPAL", desc: "Tamagotchi-style desktop/phone widget. Keep your pet happy by logging moods, drinking water, or initiating a Digital Detox.", price: "Freemium / $2.99/mo", category: "kids", tag: "Wellness Gaming" },
-            { id: 2, name: "Edu-Verse", desc: "RPG elements meet short-form video education. Watch educational shorts to earn Knowledge Points and build your 3D base.", price: "Free", category: "kids", tag: "EdTech" },
-            { id: 3, name: "Brain Rot Button", desc: "High-skill arcade game heavily skinned with weekly viral memes. Standard mechanics, ever-evolving meta assets.", price: "Free (Ad Supported)", category: "13+", tag: "Arcade" },
-            { id: 4, name: "Ro-Stats", desc: "Unofficial companion app for tracking stats, calculating real-money inventory value, and a Trade Calculator to prevent scams.", price: "$1.99", category: "13+", tag: "Utility" },
-            { id: 5, name: "ClutchLogic Homework", desc: "Snap a photo of homework. Our specialized LLM acts as a tutor, explaining the core concepts rather than just giving the answer.", price: "$4.99/mo", category: "13+", tag: "Education" },
-            { id: 6, name: "Aura App", desc: "Verified high school network for positive-only polls about friends. Discover who has the 'it factor' in your specific school.", price: "Free", category: "13+", tag: "Social" },
-            { id: 7, name: "OnSight", desc: "Once a day, a notification drops a random challenge (e.g. 'Do a handstand'). Compete with friends in a closed group to post first.", price: "Free", category: "13+", tag: "Social Challenge" },
-            { id: 8, name: "GlossOS", desc: "High-quality, trendy home screen widgets (calendars, photo frames, dynamic quotes) reviving the Frutiger Aero and Y2K gloss aesthetics.", price: "$3.99", category: "adults", tag: "Customization" },
-            { id: 9, name: "Pull Up", desc: "Find offline hangouts that are not dates. Board games, run clubs, thrifting. No swiping, just 'Who wants to do X at Y time?'", price: "Free", category: "adults", tag: "Networking" },
-            { id: 10, name: "AI Twin", desc: "Voice-first AI chat. Talk to specialized AI personas using real-time voice synthesis.", price: "$9.99/mo", category: "adults", tag: "AI Assistant" },
-            { id: 11, name: "The Stock Seer App", desc: "Advanced market analytics and automated planning tailored to your financial goals.", price: "$29/mo", category: "adults", tag: "Finance" }
+            { id: 1, name: "MOODPAL", desc: "Tamagotchi-style desktop/phone widget. Keep your pet happy by logging moods, drinking water, or initiating a Digital Detox.", priceStr: "Freemium / $2.99/mo", price: 2.99, category: "kids", tag: "Wellness Gaming" },
+            { id: 2, name: "Edu-Verse", desc: "RPG elements meet short-form video education. Watch educational shorts to earn Knowledge Points and build your base.", priceStr: "Free", price: 0.00, category: "kids", tag: "EdTech" },
+            { id: 3, name: "Brain Rot Button", desc: "High-skill arcade game heavily skinned with weekly viral memes. Standard mechanics, ever-evolving meta assets.", priceStr: "Free (Ad Supported)", price: 0.00, category: "13+", tag: "Arcade" },
+            { id: 4, name: "Ro-Stats", desc: "Unofficial companion app for tracking stats, calculating real-money inventory value, and a Trade Calculator.", priceStr: "$1.99", price: 1.99, category: "13+", tag: "Utility" },
+            { id: 5, name: "ClutchLogic Homework", desc: "Snap a photo of homework. Our specialized LLM acts as a tutor, explaining the core concepts.", priceStr: "$4.99/mo", price: 4.99, category: "13+", tag: "Education" },
+            { id: 6, name: "Aura App", desc: "Verified high school network for positive-only polls about friends. Discover who has the 'it factor'.", priceStr: "Free", price: 0.00, category: "13+", tag: "Social" },
+            { id: 7, name: "OnSight", desc: "Once a day, a notification drops a random challenge. Compete with friends in a closed group to post first.", priceStr: "Free", price: 0.00, category: "13+", tag: "Social Challenge" },
+            { id: 8, name: "GlossOS", desc: "High-quality, trendy home screen widgets reviving the Frutiger Aero and Y2K gloss aesthetics.", priceStr: "$3.99", price: 3.99, category: "adults", tag: "Customization" },
+            { id: 9, name: "Pull Up", desc: "Find offline hangouts that are not dates. Board games, run clubs, thrifting. No swiping.", priceStr: "Free", price: 0.00, category: "adults", tag: "Networking" },
+            { id: 10, name: "AI Twin", desc: "Voice-first AI chat. Talk to specialized AI personas using real-time voice synthesis.", priceStr: "$9.99/mo", price: 9.99, category: "adults", tag: "AI Assistant" },
+            { id: 11, name: "Stock Seer", desc: "Advanced market analytics and automated planning tailored to your financial goals.", priceStr: "$29.00/mo", price: 29.00, category: "adults", tag: "Finance" }
         ];
 
-        let cartCount = 0;
+        let cart = {}; // Store as { appId: quantity }
 
         function renderApps(filter = 'all') {
             const grid = document.getElementById('app-grid');
             grid.innerHTML = '';
-
             const filteredApps = filter === 'all' ? apps : apps.filter(app => app.category === filter);
 
             filteredApps.forEach(app => {
                 const card = document.createElement('div');
                 card.className = 'app-card rounded-2xl p-6 flex flex-col h-full relative overflow-hidden group';
-                
-                // Abstract background pattern for visual flair
                 const bgPattern = `<div class="absolute -right-10 -top-10 w-32 h-32 bg-[#0051ff] rounded-full blur-3xl opacity-10 group-hover:opacity-30 transition duration-500"></div>`;
-
                 card.innerHTML = `
                     ${bgPattern}
                     <div class="flex justify-between items-start mb-4 z-10 relative">
@@ -138,11 +186,10 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-3 z-10 relative">${app.name}</h3>
                     <p class="text-gray-400 text-sm mb-8 flex-grow z-10 relative leading-relaxed">${app.desc}</p>
-                    
                     <div class="flex justify-between items-center mt-auto z-10 relative pt-4 border-t border-gray-800">
-                        <span class="text-lg font-bold text-white">${app.price}</span>
-                        <button onclick="addToCart('${app.name}')" class="btn-glow text-white text-sm font-bold py-2 px-5 rounded-full">
-                            Get App
+                        <span class="text-lg font-bold text-white">${app.priceStr}</span>
+                        <button onclick="addToCart(${app.id})" class="btn-glow text-white text-sm font-bold py-2 px-5 rounded-full">
+                            Add to Cart
                         </button>
                     </div>
                 `;
@@ -151,28 +198,134 @@
         }
 
         function filterApps(category) {
-            // Update active button styling
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if(btn.innerText.toLowerCase() === category.toLowerCase()) {
-                    btn.classList.add('active');
-                }
+                if(btn.innerText.toLowerCase() === category.toLowerCase()) btn.classList.add('active');
             });
             renderApps(category);
         }
 
-        function addToCart(appName) {
-            cartCount++;
-            const counter = document.getElementById('cart-count');
-            counter.innerText = cartCount;
+        /* --- CART LOGIC --- */
+        function addToCart(appId) {
+            if (cart[appId]) {
+                cart[appId]++;
+            } else {
+                cart[appId] = 1;
+            }
+            updateCartUI();
             
-            // Subtle animation on cart
+            // Notification pop animation
+            const counter = document.getElementById('cart-count');
             counter.classList.add('scale-150');
             setTimeout(() => counter.classList.remove('scale-150'), 200);
         }
 
-        // Initial render
+        function changeQuantity(appId, delta) {
+            if (cart[appId]) {
+                cart[appId] += delta;
+                if (cart[appId] <= 0) delete cart[appId];
+                updateCartUI();
+            }
+        }
+
+        function clearCart() {
+            cart = {};
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            cartItemsContainer.innerHTML = '';
+            
+            let totalItems = 0;
+            let totalPrice = 0;
+
+            if (Object.keys(cart).length === 0) {
+                cartItemsContainer.innerHTML = '<p class="text-gray-500 text-center mt-10">Your cart is empty.</p>';
+            } else {
+                Object.keys(cart).forEach(id => {
+                    const app = apps.find(a => a.id == id);
+                    const qty = cart[id];
+                    totalItems += qty;
+                    totalPrice += (app.price * qty);
+
+                    cartItemsContainer.innerHTML += `
+                        <div class="flex justify-between items-center bg-[#111] p-4 rounded-xl border border-gray-800">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm text-white">${app.name}</h4>
+                                <span class="text-xs text-[#00f0ff]">$${app.price.toFixed(2)}</span>
+                            </div>
+                            <div class="flex items-center gap-3 bg-[#050505] rounded-lg px-2 py-1 border border-gray-700">
+                                <button onclick="changeQuantity(${app.id}, -1)" class="text-gray-400 hover:text-white px-1">-</button>
+                                <span class="text-sm font-bold w-4 text-center">${qty}</span>
+                                <button onclick="changeQuantity(${app.id}, 1)" class="text-gray-400 hover:text-white px-1">+</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('cart-count').innerText = totalItems;
+            document.getElementById('cart-total').innerText = `$${totalPrice.toFixed(2)}`;
+        }
+
+        function toggleCart(event) {
+            // Prevent overlay click from triggering if clicking inside the panel
+            if (event && event.target.id !== 'cart-overlay' && event.currentTarget.id === 'cart-overlay') return;
+            
+            const overlay = document.getElementById('cart-overlay');
+            const panel = document.getElementById('cart-panel');
+            
+            if (overlay.classList.contains('modal-enter-active')) {
+                panel.classList.remove('slide-panel-active');
+                setTimeout(() => overlay.classList.remove('modal-enter-active'), 300);
+            } else {
+                overlay.classList.add('modal-enter-active');
+                setTimeout(() => panel.classList.add('slide-panel-active'), 10);
+            }
+        }
+
+        /* --- CHECKOUT LOGIC --- */
+        function processCheckout() {
+            if (Object.keys(cart).length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+
+            // Calculate totals for receipt
+            const receiptItems = document.getElementById('receipt-items');
+            let totalPrice = 0;
+            receiptItems.innerHTML = '';
+
+            Object.keys(cart).forEach(id => {
+                const app = apps.find(a => a.id == id);
+                const qty = cart[id];
+                const lineTotal = app.price * qty;
+                totalPrice += lineTotal;
+                
+                receiptItems.innerHTML += `
+                    <div class="flex justify-between text-sm py-2 border-b border-gray-800 last:border-0">
+                        <span class="text-gray-300">${qty}x ${app.name}</span>
+                        <span class="text-white">$${lineTotal.toFixed(2)}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('receipt-total').innerText = `$${totalPrice.toFixed(2)}`;
+
+            // Hide Cart and Show Receipt
+            toggleCart(); // Close cart
+            document.getElementById('receipt-modal').classList.add('modal-enter-active');
+        }
+
+        function closeReceipt() {
+            document.getElementById('receipt-modal').classList.remove('modal-enter-active');
+            clearCart(); // Empty the cart after successful purchase
+        }
+
+        // Initialize
         renderApps();
+        updateCartUI(); // Initial blank state for cart
     </script>
 </body>
 </html>
