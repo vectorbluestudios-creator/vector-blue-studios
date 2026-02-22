@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Blue Studios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --card-dark: #0d0d0d;
+            --accent-blue: #00f0ff;
+            --accent-blue-deep: #0051ff;
+        }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        .kriss-gradient {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-blur {
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .app-card {
+            background-color: var(--card-dark);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .app-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 30px -10px rgba(0, 240, 255, 0.2);
+        }
+        .btn-glow {
+            background: linear-gradient(135deg, var(--accent-blue-deep), var(--accent-blue));
+            transition: all 0.3s ease;
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+            transform: scale(1.05);
+        }
+        .hero-bg {
+            background: radial-gradient(circle at center, rgba(0, 81, 255, 0.15) 0%, rgba(5, 5, 5, 1) 70%);
+        }
+        .category-btn.active {
+            border-bottom: 2px solid var(--accent-blue);
+            color: var(--accent-blue);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="fixed w-full z-50 nav-blur py-4">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="text-2xl font-bold tracking-tighter kriss-gradient">VECTOR BLUE STUDIOS</div>
+            <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-widest text-gray-400">
+                <button onclick="filterApps('all')" class="category-btn active hover:text-white transition uppercase">All</button>
+                <button onclick="filterApps('kids')" class="category-btn hover:text-white transition uppercase">Kids</button>
+                <button onclick="filterApps('13+')" class="category-btn hover:text-white transition uppercase">13+</button>
+                <button onclick="filterApps('adults')" class="category-btn hover:text-white transition uppercase">Adults</button>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="relative group">
+                    <svg class="w-6 h-6 text-white group-hover:text-[#00f0ff] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-[#00f0ff] text-black text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-bg pt-32 pb-20 px-6 min-h-[60vh] flex items-center">
+        <div class="container mx-auto text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight">
+                Architecting the <br>
+                <span class="kriss-gradient">Next Digital Frontier</span>
+            </h1>
+            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">
+                Discover our ecosystem of hyper-modern applications designed to redefine utility, connection, and entertainment.
+            </p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12" id="store">
+        <div id="app-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+    </main>
+
+    <footer class="border-t border-gray-900 mt-20 py-10 text-center text-gray-600 text-sm">
+        <p>&copy; 2026 Vector Blue Studios. All systems operational.</p>
+    </footer>
+
+    <script>
+        // Store Data mapping
+        const apps = [
+            { id: 1, name: "MOODPAL", desc: "Tamagotchi-style desktop/phone widget. Keep your pet happy by logging moods, drinking water, or initiating a Digital Detox.", price: "Freemium / $2.99/mo", category: "kids", tag: "Wellness Gaming" },
+            { id: 2, name: "Edu-Verse", desc: "RPG elements meet short-form video education. Watch educational shorts to earn Knowledge Points and build your 3D base.", price: "Free", category: "kids", tag: "EdTech" },
+            { id: 3, name: "Brain Rot Button", desc: "High-skill arcade game heavily skinned with weekly viral memes. Standard mechanics, ever-evolving meta assets.", price: "Free (Ad Supported)", category: "13+", tag: "Arcade" },
+            { id: 4, name: "Ro-Stats", desc: "Unofficial companion app for tracking stats, calculating real-money inventory value, and a Trade Calculator to prevent scams.", price: "$1.99", category: "13+", tag: "Utility" },
+            { id: 5, name: "ClutchLogic Homework", desc: "Snap a photo of homework. Our specialized LLM acts as a tutor, explaining the core concepts rather than just giving the answer.", price: "$4.99/mo", category: "13+", tag: "Education" },
+            { id: 6, name: "Aura App", desc: "Verified high school network for positive-only polls about friends. Discover who has the 'it factor' in your specific school.", price: "Free", category: "13+", tag: "Social" },
+            { id: 7, name: "OnSight", desc: "Once a day, a notification drops a random challenge (e.g. 'Do a handstand'). Compete with friends in a closed group to post first.", price: "Free", category: "13+", tag: "Social Challenge" },
+            { id: 8, name: "GlossOS", desc: "High-quality, trendy home screen widgets (calendars, photo frames, dynamic quotes) reviving the Frutiger Aero and Y2K gloss aesthetics.", price: "$3.99", category: "adults", tag: "Customization" },
+            { id: 9, name: "Pull Up", desc: "Find offline hangouts that are not dates. Board games, run clubs, thrifting. No swiping, just 'Who wants to do X at Y time?'", price: "Free", category: "adults", tag: "Networking" },
+            { id: 10, name: "AI Twin", desc: "Voice-first AI chat. Talk to specialized AI personas using real-time voice synthesis.", price: "$9.99/mo", category: "adults", tag: "AI Assistant" },
+            { id: 11, name: "The Stock Seer App", desc: "Advanced market analytics and automated planning tailored to your financial goals.", price: "$29/mo", category: "adults", tag: "Finance" }
+        ];
+
+        let cartCount = 0;
+
+        function renderApps(filter = 'all') {
+            const grid = document.getElementById('app-grid');
+            grid.innerHTML = '';
+
+            const filteredApps = filter === 'all' ? apps : apps.filter(app => app.category === filter);
+
+            filteredApps.forEach(app => {
+                const card = document.createElement('div');
+                card.className = 'app-card rounded-2xl p-6 flex flex-col h-full relative overflow-hidden group';
+                
+                // Abstract background pattern for visual flair
+                const bgPattern = `<div class="absolute -right-10 -top-10 w-32 h-32 bg-[#0051ff] rounded-full blur-3xl opacity-10 group-hover:opacity-30 transition duration-500"></div>`;
+
+                card.innerHTML = `
+                    ${bgPattern}
+                    <div class="flex justify-between items-start mb-4 z-10 relative">
+                        <span class="text-xs font-bold tracking-wider text-[#00f0ff] uppercase">${app.tag}</span>
+                        <span class="text-xs text-gray-500 uppercase border border-gray-700 px-2 py-1 rounded">${app.category}</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 z-10 relative">${app.name}</h3>
+                    <p class="text-gray-400 text-sm mb-8 flex-grow z-10 relative leading-relaxed">${app.desc}</p>
+                    
+                    <div class="flex justify-between items-center mt-auto z-10 relative pt-4 border-t border-gray-800">
+                        <span class="text-lg font-bold text-white">${app.price}</span>
+                        <button onclick="addToCart('${app.name}')" class="btn-glow text-white text-sm font-bold py-2 px-5 rounded-full">
+                            Get App
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterApps(category) {
+            // Update active button styling
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.innerText.toLowerCase() === category.toLowerCase()) {
+                    btn.classList.add('active');
+                }
+            });
+            renderApps(category);
+        }
+
+        function addToCart(appName) {
+            cartCount++;
+            const counter = document.getElementById('cart-count');
+            counter.innerText = cartCount;
+            
+            // Subtle animation on cart
+            counter.classList.add('scale-150');
+            setTimeout(() => counter.classList.remove('scale-150'), 200);
+        }
+
+        // Initial render
+        renderApps();
+    </script>
+</body>
+</html>
